@@ -129,21 +129,21 @@
             <!-- VIEW 1: PATIENT ROSTER -->
             <section id="view-roster" class="space-y-4">
                 
-                <!-- Category Tabs with Fixed Badge Alignment -->
-                <div class="bg-slate-900 p-1.5 rounded-xl border border-slate-800 flex gap-1.5 text-xs font-bold overflow-x-auto">
-                    <button onclick="switchCategory('inpatients')" id="cat-btn-inpatients" class="flex-1 min-w-0 py-2.5 px-3 rounded-lg transition bg-amber-500 text-slate-950 font-black shadow flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-bed shrink-0"></i>
-                        <span class="truncate">Active Inpatients</span>
-                        <span id="count-inpatients" class="shrink-0 inline-flex items-center justify-center bg-slate-950/30 text-slate-950 rounded-full px-2 py-0.5 text-[11px] font-black">0</span>
+                <!-- Category Tabs with Mobile-Optimized Scrollable Pills -->
+                <div class="bg-slate-900 p-1.5 rounded-xl border border-slate-800 flex gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+                    <button onclick="switchCategory('inpatients')" id="cat-btn-inpatients" class="shrink-0 py-2 px-3.5 rounded-lg text-xs font-black transition bg-amber-500 text-slate-950 shadow flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-bed"></i>
+                        <span>Inpatients</span>
+                        <span id="count-inpatients" class="inline-flex items-center justify-center bg-slate-950/30 text-slate-950 rounded-full px-2 py-0.5 text-[11px] font-black">0</span>
                     </button>
-                    <button onclick="switchCategory('coadmitted')" id="cat-btn-coadmitted" class="flex-1 min-w-0 py-2.5 px-3 rounded-lg transition text-slate-400 hover:text-white flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-handshake shrink-0"></i>
-                        <span class="truncate">Co-Admitted Consults</span>
-                        <span id="count-coadmitted" class="shrink-0 inline-flex items-center justify-center bg-slate-800 text-slate-300 rounded-full px-2 py-0.5 text-[11px] font-bold">0</span>
+                    <button onclick="switchCategory('coadmitted')" id="cat-btn-coadmitted" class="shrink-0 py-2 px-3.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-handshake"></i>
+                        <span>Co-Admitted</span>
+                        <span id="count-coadmitted" class="inline-flex items-center justify-center bg-slate-800 text-slate-300 rounded-full px-2 py-0.5 text-[11px] font-bold">0</span>
                     </button>
-                    <button onclick="switchCategory('discharged')" id="cat-btn-discharged" class="flex-1 min-w-0 py-2.5 px-3 rounded-lg transition text-slate-400 hover:text-white flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-box-archive shrink-0"></i>
-                        <span class="truncate">Discharged Archive</span>
+                    <button onclick="switchCategory('discharged')" id="cat-btn-discharged" class="shrink-0 py-2 px-3.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-box-archive"></i>
+                        <span>Discharged</span>
                         <span id="count-discharged" class="shrink-0 inline-flex items-center justify-center bg-slate-800 text-slate-300 rounded-full px-2 py-0.5 text-[11px] font-bold">0</span>
                     </button>
                 </div>
@@ -175,6 +175,34 @@
                 <!-- Patient Detail Header -->
                 <div id="detail-header-card" class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-3"></div>
 
+                <!-- CLINICAL EXECUTIVE SUMMARY BANNER -->
+                <div id="executive-summary-banner" class="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 p-4 rounded-xl border border-indigo-500/30 shadow-md space-y-3">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <h4 class="font-extrabold text-xs text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-check text-amber-400"></i> Executive Clinical Brief & Round Summary
+                        </h4>
+                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-mono" id="summary-last-updated">Auto-Updated</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                        <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                            <span class="font-bold text-amber-400 block mb-1"><i class="fa-solid fa-heart-pulse mr-1"></i> Current Condition & Status</span>
+                            <p id="summary-condition" class="text-slate-300 font-medium">Loading summary...</p>
+                        </div>
+                        <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                            <span class="font-bold text-emerald-400 block mb-1"><i class="fa-solid fa-circle-check mr-1"></i> Key Actions Completed</span>
+                            <ul id="summary-completed" class="text-slate-300 list-disc list-inside space-y-0.5 font-medium">
+                                <li>No actions logged yet</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-950/60 p-3 rounded-lg border border-slate-800">
+                            <span class="font-bold text-rose-400 block mb-1"><i class="fa-solid fa-clock-rotate-left mr-1"></i> Pending Tasks & Orders</span>
+                            <ul id="summary-pending" class="text-slate-300 list-disc list-inside space-y-0.5 font-medium">
+                                <li>No pending tasks</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Clinical Flags Bar -->
                 <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-sm flex flex-wrap gap-2 items-center text-xs">
                     <span class="font-bold text-slate-300">Clinical Status Flags:</span>
@@ -198,8 +226,9 @@
                 </div>
 
                 <!-- Navigation Subtabs -->
-                <div class="flex border-b border-slate-800 bg-slate-900 rounded-xl shadow-sm p-1.5 overflow-x-auto gap-1 text-xs sm:text-sm font-semibold">
+                <div class="flex border-b border-slate-800 bg-slate-900 rounded-xl shadow-sm p-1.5 overflow-x-auto gap-1 text-xs sm:text-sm font-semibold no-scrollbar">
                     <button onclick="switchSubTab('ai')" id="subtab-ai" class="px-4 py-2 rounded-lg font-extrabold bg-amber-500 text-slate-950"><i class="fa-solid fa-brain mr-1.5"></i>AI Assistant & Guidelines</button>
+                    <button onclick="switchSubTab('plan')" id="subtab-plan" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white"><i class="fa-solid fa-list-check mr-1.5"></i>Plan & Tasks</button>
                     <button onclick="switchSubTab('exam')" id="subtab-exam" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white">Physical Exam</button>
                     <button onclick="switchSubTab('soap')" id="subtab-soap" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white">SOAP Notes</button>
                     <button onclick="switchSubTab('labs')" id="subtab-labs" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white">Labs & Trends</button>
@@ -208,21 +237,29 @@
                 </div>
 
                 <!-- SUBTAB 0: AI CLINICAL ASSISTANT -->
-                <div id="subtab-content-ai" class="space-y-4">
-                    <div class="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-5 rounded-xl border border-slate-800 shadow-md space-y-4">
+                <!-- SUBTAB 0.5: DEDICATED PLAN & CHECKLIST -->
+                <div id="subtab-content-plan" class="hidden space-y-4">
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
                         <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-brain text-amber-400 text-xl"></i>
-                                <h4 class="font-bold text-base">Offline AI Clinical Decision Assistant</h4>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-100"><i class="fa-solid fa-list-check text-amber-400 mr-1.5"></i> Ward Round Plan & Task Checklist</h4>
+                                <p class="text-xs text-slate-400">Track pending orders, lab requests, and procedures for real-time team coordination.</p>
                             </div>
-                            <button onclick="runAIAssessment()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-rotate text-xs"></i> Re-Synthesize Chart Data
+                            <button onclick="clearCompletedTasks()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-700 transition">
+                                Clear Completed
                             </button>
                         </div>
 
-                        <div id="ai-output-container" class="space-y-4 text-xs font-medium">
-                            <p class="text-slate-400">Click "Re-Synthesize Chart Data" or update patient parameters to generate an AI-driven differential diagnosis and clinical approach.</p>
-                        </div>
+                        <!-- Add Task Input Form -->
+                        <form onsubmit="addNewTask(event)" class="flex gap-2">
+                            <input type="text" id="new-task-input" placeholder="Add plan task (e.g., 'Repeat LFTs & INR tomorrow morning', 'Schedule Abdominal US')" required class="flex-1 bg-slate-950 border border-slate-800 text-slate-100 p-2.5 text-xs rounded-lg focus:outline-none focus:border-amber-500">
+                            <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2.5 text-xs rounded-lg shadow">
+                                <i class="fa-solid fa-plus mr-1"></i> Add Task
+                            </button>
+                        </form>
+
+                        <!-- Tasks List -->
+                        <div id="tasks-checklist-container" class="space-y-2 pt-2"></div>
                     </div>
                 </div>
 
@@ -1094,11 +1131,11 @@
                 const btn = document.getElementById(`cat-btn-${c}`);
                 const badge = document.getElementById(`count-${c}`);
                 if (c === cat) {
-                    btn.className = "flex-1 min-w-0 py-2.5 px-3 rounded-lg transition bg-amber-500 text-slate-950 font-black shadow flex items-center justify-center gap-2";
-                    badge.className = "shrink-0 inline-flex items-center justify-center bg-slate-950/30 text-slate-950 rounded-full px-2 py-0.5 text-[11px] font-black";
+                    btn.className = "shrink-0 py-2 px-3.5 rounded-lg text-xs font-black transition bg-amber-500 text-slate-950 shadow flex items-center gap-2 whitespace-nowrap";
+                    badge.className = "inline-flex items-center justify-center bg-slate-950/30 text-slate-950 rounded-full px-2 py-0.5 text-[11px] font-black";
                 } else {
-                    btn.className = "flex-1 min-w-0 py-2.5 px-3 rounded-lg transition text-slate-400 hover:text-white flex items-center justify-center gap-2";
-                    badge.className = "shrink-0 inline-flex items-center justify-center bg-slate-800 text-slate-300 rounded-full px-2 py-0.5 text-[11px] font-bold";
+                    btn.className = "shrink-0 py-2 px-3.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap";
+                    badge.className = "inline-flex items-center justify-center bg-slate-800 text-slate-300 rounded-full px-2 py-0.5 text-[11px] font-bold";
                 }
             });
             showRoster();
@@ -1253,8 +1290,116 @@
                 </div>
             `;
 
+            renderExecutiveSummary(p);
             renderTags();
             switchSubTab('ai');
+        }
+
+        function renderExecutiveSummary(p) {
+            document.getElementById('summary-condition').innerText = `${p.diagnosis} (${p.isCritical ? 'Critical Acuity' : 'Stable Inpatient'})`;
+            
+            const completedContainer = document.getElementById('summary-completed');
+            const pendingContainer = document.getElementById('summary-pending');
+            
+            const tasks = p.tasks || [];
+            const doneTasks = tasks.filter(t => t.done);
+            const pendingTasks = tasks.filter(t => !t.done);
+
+            completedContainer.innerHTML = doneTasks.length > 0
+                ? doneTasks.slice(0, 3).map(t => `<li class="truncate">${t.text}</li>`).join('')
+                : '<li>No completed items logged</li>';
+
+            pendingContainer.innerHTML = pendingTasks.length > 0
+                ? pendingTasks.slice(0, 3).map(t => `<li class="truncate">${t.text}</li>`).join('')
+                : '<li>No pending items</li>';
+            
+            document.getElementById('summary-last-updated').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function switchSubTab(sub) {
+            ['ai', 'plan', 'exam', 'soap', 'labs', 'procedures', 'calculators'].forEach(s => {
+                const btn = document.getElementById(`subtab-${s}`);
+                const content = document.getElementById(`subtab-content-${s}`);
+                if (s === sub) {
+                    btn.className = "px-4 py-2 rounded-lg font-extrabold bg-amber-500 text-slate-950";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white";
+                    content.classList.add('hidden');
+                }
+            });
+
+            if (sub === 'ai') runAIAssessment();
+            if (sub === 'plan') renderPlanTasks();
+            if (sub === 'exam') renderPhysicalExam();
+            if (sub === 'soap') renderSOAPTab();
+            if (sub === 'labs') renderLabsTab();
+            if (sub === 'procedures') { renderEndoHistory(); renderParaHistory(); }
+        }
+
+        /* PLAN & TASKS LOGIC */
+        function renderPlanTasks() {
+            const p = appData.patients.find(x => x.id === currentPatientId);
+            const container = document.getElementById('tasks-checklist-container');
+            if (!p || !p.tasks || p.tasks.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 py-3 text-center bg-slate-950 rounded-lg border border-slate-800">No plan tasks currently added for this patient.</p>`;
+                return;
+            }
+
+            container.innerHTML = p.tasks.map((t, idx) => `
+                <div class="flex items-center justify-between p-3 rounded-lg border ${t.done ? 'bg-slate-950/40 border-slate-900 opacity-60' : 'bg-slate-950 border-slate-800'} transition">
+                    <label class="flex items-center gap-3 cursor-pointer flex-1 min-w-0">
+                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTaskDone(${idx})" class="w-4 h-4 accent-amber-500 rounded">
+                        <span class="text-xs font-medium text-slate-200 ${t.done ? 'line-through text-slate-500' : ''} truncate">${t.text}</span>
+                    </label>
+                    <button onclick="removeTask(${idx})" class="text-slate-500 hover:text-rose-400 text-xs ml-2">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addNewTask(e) {
+            e.preventDefault();
+            const input = document.getElementById('new-task-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            const p = appData.patients.find(x => x.id === currentPatientId);
+            if (!p.tasks) p.tasks = [];
+            p.tasks.push({ text: val, done: false, dateAdded: new Date().toLocaleDateString() });
+
+            input.value = '';
+            saveData();
+            renderPlanTasks();
+            renderExecutiveSummary(p);
+        }
+
+        function toggleTaskDone(index) {
+            const p = appData.patients.find(x => x.id === currentPatientId);
+            if (!p || !p.tasks || !p.tasks[index]) return;
+            p.tasks[index].done = !p.tasks[index].done;
+            saveData();
+            renderPlanTasks();
+            renderExecutiveSummary(p);
+        }
+
+        function removeTask(index) {
+            const p = appData.patients.find(x => x.id === currentPatientId);
+            if (!p || !p.tasks) return;
+            p.tasks.splice(index, 1);
+            saveData();
+            renderPlanTasks();
+            renderExecutiveSummary(p);
+        }
+
+        function clearCompletedTasks() {
+            const p = appData.patients.find(x => x.id === currentPatientId);
+            if (!p || !p.tasks) return;
+            p.tasks = p.tasks.filter(t => !t.done);
+            saveData();
+            renderPlanTasks();
+            renderExecutiveSummary(p);
         }
 
         function dischargePatient(id) {
