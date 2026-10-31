@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-100">
+<html lang="en" class="h-full bg-slate-900">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,554 +19,627 @@
             70% { box-shadow: 0 0 0 10px rgba(225, 29, 72, 0); }
             100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
         }
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="h-full text-slate-800 flex flex-col antialiased bg-slate-100">
+<body class="h-full text-slate-100 flex flex-col antialiased bg-slate-950">
 
-    <!-- HEADER NAVIGATION -->
-    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40 border-b border-amber-500/30">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center gap-3">
-                <div class="bg-amber-600 p-2.5 rounded-xl text-white shadow">
-                    <i class="fa-solid fa-stethoscope text-xl"></i>
+    <!-- AUTHENTICATION GATEWAY OVERLAY -->
+    <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="inline-flex items-center justify-center bg-amber-500/10 text-amber-400 p-3.5 rounded-2xl border border-amber-500/20">
+                    <i class="fa-solid fa-stethoscope text-3xl"></i>
                 </div>
-                <div>
-                    <h1 class="font-extrabold text-lg leading-tight">GIT & Hepatology Workstation</h1>
-                    <p class="text-xs text-slate-400 font-semibold">Clinical Decision Support & Ward Tracker</p>
-                </div>
+                <h2 class="text-2xl font-black text-white">GIT & Hepatology Station</h2>
+                <p class="text-xs text-slate-400 font-medium">Ward Management & Clinical Decision Workstation</p>
             </div>
 
-            <div class="flex items-center gap-2 flex-wrap">
-                <button onclick="openUserModal()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 text-xs font-semibold text-slate-200">
-                    <i class="fa-solid fa-user-doctor text-amber-400"></i>
-                    <span id="nav-user-display">Dr. Mostafa (Resident)</span>
-                </button>
-                <button onclick="openSBARModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition">
-                    <i class="fa-solid fa-clipboard-list"></i>
-                    <span>SBAR Handover</span>
-                </button>
-                <button onclick="openBackupModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-700">
-                    <i class="fa-solid fa-database"></i>
-                    <span>Backup / Restore</span>
-                </button>
-                <button onclick="openAdmitModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition">
-                    <i class="fa-solid fa-plus"></i>
-                    <span>Admit Patient</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- MAIN APP WORKSPACE -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-4">
-
-        <!-- VIEW 1: PATIENT ROSTER -->
-        <section id="view-roster" class="space-y-4">
-            
-            <!-- Category Tabs -->
-            <div class="bg-white p-2 rounded-xl shadow-sm border border-slate-300 flex flex-wrap gap-2 text-xs font-bold">
-                <button onclick="switchCategory('inpatients')" id="cat-btn-inpatients" class="flex-1 py-2.5 px-3 text-xs sm:text-sm font-extrabold rounded-lg transition bg-amber-100 text-amber-900 border border-amber-300 shadow-sm flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-bed"></i> Active Inpatients (<span id="count-inpatients">0</span>)
-                </button>
-                <button onclick="switchCategory('coadmitted')" id="cat-btn-coadmitted" class="flex-1 py-2.5 px-3 text-xs sm:text-sm font-bold rounded-lg transition text-slate-700 hover:text-slate-900 flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-handshake"></i> Co-Admitted Consults (<span id="count-coadmitted">0</span>)
-                </button>
-                <button onclick="switchCategory('discharged')" id="cat-btn-discharged" class="flex-1 py-2.5 px-3 text-xs sm:text-sm font-bold rounded-lg transition text-slate-700 hover:text-slate-900 flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-box-archive"></i> Discharged Archive (<span id="count-discharged">0</span>)
-                </button>
-            </div>
-
-            <!-- Search & Filter Bar -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-center justify-between">
-                <div class="relative flex-1 min-w-[260px]">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
-                    <input type="text" id="search-input" oninput="renderRoster()" placeholder="Search Name or Diagnosis..." class="w-full pl-10 pr-4 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                </div>
-                <div class="flex items-center gap-2">
-                    <label for="filter-critical" class="text-xs font-semibold text-slate-700">Critical Cases Only:</label>
-                    <input type="checkbox" id="filter-critical" onchange="renderRoster()" class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500">
-                </div>
-            </div>
-
-            <!-- Grid Container -->
-            <div id="roster-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        </section>
-
-        <!-- VIEW 2: PATIENT CASE SHEET -->
-        <section id="view-patient-detail" class="hidden space-y-4">
-            
-            <button onclick="showRoster()" class="text-slate-700 hover:text-slate-900 text-xs sm:text-sm font-extrabold flex items-center gap-2 bg-white px-3.5 py-2 rounded-lg border border-slate-300 shadow-sm">
-                <i class="fa-solid fa-arrow-left"></i>
-                <span>Back to Roster</span>
-            </button>
-
-            <!-- Patient Detail Header -->
-            <div id="detail-header-card" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3"></div>
-
-            <!-- Clinical Flags Bar -->
-            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-2 items-center text-xs">
-                <span class="font-bold text-slate-700">Clinical Status Flags:</span>
-                <div id="clinical-tags-container" class="flex flex-wrap gap-1.5"></div>
-                <button onclick="toggleTag('NPO for EGD')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-300 text-[11px] font-semibold">+ NPO EGD</button>
-                <button onclick="toggleTag('Active GI Bleed')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded border border-rose-300 text-[11px] font-semibold">+ GI Bleed</button>
-                <button onclick="toggleTag('Post-LVP (Albumin Given)')" class="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded border border-indigo-300 text-[11px] font-semibold">+ Post-LVP</button>
-                <button onclick="toggleTag('Lactulose Titration')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded border border-amber-300 text-[11px] font-semibold">+ Lactulose</button>
-            </div>
-
-            <!-- Protocol Alert Banner -->
-            <div class="bg-rose-50 border-l-4 border-rose-600 p-4 rounded-xl shadow-sm space-y-1 text-xs">
-                <h4 class="font-black text-rose-900 flex items-center gap-1">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Hepatology Safety & Clinical Protocol Warnings:
-                </h4>
-                <ul class="text-[11px] text-rose-800 list-disc list-inside space-y-0.5 font-medium">
-                    <li>Strictly avoid NSAIDs in liver cirrhosis due to severe risk of Acute Kidney Injury (HRS).</li>
-                    <li>Target Hb in acute variceal hemorrhage resuscitation is strictly 7-8 g/dL. Avoid over-transfusion.</li>
-                    <li>Discontinue Non-Selective Beta-Blockers (NSBBs) during acute hemorrhagic shock or SBP episodes.</li>
-                </ul>
-            </div>
-
-            <!-- Navigation Subtabs -->
-            <div class="flex border-b border-slate-300 bg-white rounded-xl shadow-sm p-1.5 overflow-x-auto gap-1 text-xs sm:text-sm font-semibold">
-                <button onclick="switchSubTab('ai')" id="subtab-ai" class="px-4 py-2 rounded-lg font-extrabold bg-indigo-100 text-indigo-900"><i class="fa-solid fa-wand-magic-sparkles mr-1 text-indigo-600"></i>AI Assistant & Guidelines</button>
-                <button onclick="switchSubTab('exam')" id="subtab-exam" class="px-4 py-2 rounded-lg font-semibold text-slate-600 hover:text-slate-900">Physical Exam</button>
-                <button onclick="switchSubTab('soap')" id="subtab-soap" class="px-4 py-2 rounded-lg font-semibold text-slate-600 hover:text-slate-900">SOAP Notes</button>
-                <button onclick="switchSubTab('labs')" id="subtab-labs" class="px-4 py-2 rounded-lg font-semibold text-slate-600 hover:text-slate-900">Labs & Trends</button>
-                <button onclick="switchSubTab('procedures')" id="subtab-procedures" class="px-4 py-2 rounded-lg font-semibold text-slate-600 hover:text-slate-900">Procedures</button>
-                <button onclick="switchSubTab('calculators')" id="subtab-calculators" class="px-4 py-2 rounded-lg font-semibold text-slate-600 hover:text-slate-900">Calculators</button>
-            </div>
-
-            <!-- SUBTAB 0: AI CLINICAL ASSISTANT -->
-            <div id="subtab-content-ai" class="space-y-4">
-                <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-5 rounded-xl shadow-md space-y-4">
-                    <div class="flex justify-between items-center border-b border-indigo-700/50 pb-3">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-brain text-amber-400 text-xl"></i>
-                            <h4 class="font-bold text-base">Offline AI Clinical Decision Assistant</h4>
-                        </div>
-                        <button onclick="runAIAssessment()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-rotate text-xs"></i> Re-Synthesize Chart Data
-                        </button>
-                    </div>
-
-                    <div id="ai-output-container" class="space-y-4 text-xs font-medium">
-                        <p class="text-slate-300">Click "Re-Synthesize Chart Data" or update patient parameters to generate an AI-driven differential diagnosis and clinical approach.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SUBTAB 1: PHYSICAL EXAM LOGGER -->
-            <div id="subtab-content-exam" class="hidden space-y-4">
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 text-xs">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-user-check text-amber-600 mr-1"></i> Structured Physical Examination</h4>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block font-semibold mb-1">Vital Signs</label>
-                            <input type="text" id="exam-vitals" placeholder="e.g., BP 110/70, HR 88, Temp 37.1 C, SpO2 98%" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Asterixis (Flapping Tremor)</label>
-                            <select id="exam-asterixis" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                <option value="Absent">Absent</option>
-                                <option value="Mild / Intermittent">Mild / Intermittent (Grade I-II HE)</option>
-                                <option value="Severe / Continuous">Severe / Continuous (Grade III HE)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Hepatic Encephalopathy (West-Haven)</label>
-                            <select id="exam-he" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                <option value="Grade 0 (Unimpaired)">Grade 0 (Unimpaired)</option>
-                                <option value="Grade I (Trivial lack of awareness)">Grade I (Trivial lack of awareness)</option>
-                                <option value="Grade II (Lethargy/disorientation)">Grade II (Lethargy/disorientation)</option>
-                                <option value="Grade III (Somnolence/stupor)">Grade III (Somnolence/stupor)</option>
-                                <option value="Grade IV (Coma)">Grade IV (Coma)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Ascites Examination</label>
-                            <select id="exam-ascites" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                <option value="None">None</option>
-                                <option value="Mild (Ultrasound only)">Mild (Ultrasound only)</option>
-                                <option value="Moderate (Shifting Dullness)">Moderate (Shifting Dullness)</option>
-                                <option value="Tense Ascites (Fluid Wave)">Tense Ascites (Fluid Wave)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Jaundice / CLD Stigmata</label>
-                            <input type="text" id="exam-stigmata" placeholder="e.g. Scleral icterus, Spider nevi, Palmar erythema" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Abdominal Tenderness / Guarding</label>
-                            <input type="text" id="exam-tenderness" placeholder="e.g. Soft, diffuse mild tenderness, No rebound" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button onclick="savePhysicalExam()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-4 py-2 rounded-lg shadow">Save Physical Exam</button>
-                    </div>
-
-                    <div class="pt-3 border-t">
-                        <h5 class="font-bold text-xs text-slate-800 mb-2">Latest Exam Note:</h5>
-                        <div id="exam-display-box" class="p-3 bg-slate-50 border rounded-lg text-slate-700">No physical exam recorded yet.</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SUBTAB 2: SOAP NOTES -->
-            <div id="subtab-content-soap" class="hidden space-y-4">
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                    <h4 class="font-bold text-xs sm:text-sm text-slate-900"><i class="fa-solid fa-pen-to-square text-amber-600 mr-1"></i> Add Daily SOAP Progress Note</h4>
-                    <textarea id="soap-input" rows="3" placeholder="S: Subjective findings&#10;O: Vital signs & physical examination&#10;A: Clinical impression & assessment&#10;P: Daily plan & orders..." class="w-full text-xs p-3 border rounded-lg border-slate-300 focus:ring-2 focus:ring-amber-500 font-medium"></textarea>
-                    <div class="flex justify-end">
-                        <button onclick="addSOAPNote()" class="bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs px-4 py-2 rounded-lg shadow">Save SOAP Note</button>
-                    </div>
-                </div>
-                <div id="soap-notes-container" class="space-y-3"></div>
-            </div>
-
-            <!-- SUBTAB 3: LABS & TREND GRAPHS -->
-            <div id="subtab-content-labs" class="hidden space-y-6">
-                
-                <!-- Dynamic Standard Lab Panel Logger -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <div class="flex justify-between items-center border-b pb-2">
-                        <h4 class="font-bold text-sm text-slate-900"><i class="fa-solid fa-vial text-amber-600 mr-1"></i> Log Standard Lab Panel</h4>
-                        <button onclick="openPanelConfigModal()" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5">
-                            <i class="fa-solid fa-sliders"></i>
-                            <span>Manage Panel Fields</span>
-                        </button>
-                    </div>
-                    
-                    <div id="standard-labs-form-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                        <!-- Dynamic fields rendered by JS -->
-                    </div>
-
-                    <div class="flex justify-end pt-2">
-                        <button onclick="addStandardLabs()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Log Panel Entry</button>
-                    </div>
+            <!-- AUTH FORM -->
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div id="auth-mode-title" class="text-xs font-bold text-amber-400 uppercase tracking-wider border-b border-slate-800 pb-2">
+                    Sign In to Ward Workstation
                 </div>
 
-                <!-- Custom Labs & Serology Logger -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-vial-circle-check text-indigo-600 mr-1"></i> Custom Marker / Viral Serology Logger</h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold mb-1">Test Name *</label>
-                            <input type="text" id="custom-lab-name" placeholder="e.g. HCV Ab, HBsAg, AFP, Tacrolimus" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Value / Result *</label>
-                            <input type="text" id="custom-lab-val" placeholder="e.g. Positive, 140, Reactive" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Unit (Optional)</label>
-                            <input type="text" id="custom-lab-unit" placeholder="e.g. U/L, IU/mL, ng/mL" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                    </div>
-                    <div class="flex justify-end">
-                        <button onclick="addCustomLab()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Add Custom Marker</button>
-                    </div>
-                </div>
-
-                <!-- Trend Line Chart -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-chart-line text-amber-600 mr-1"></i> Serial Lab Parameter Trend Chart</h4>
-                    <div class="h-64 relative"><canvas id="labTrendChart"></canvas></div>
-                </div>
-
-                <!-- Custom Labs Timeline -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2">Logged Custom Tests & Serology Timeline</h4>
-                    <div id="custom-labs-timeline" class="space-y-2 text-xs"></div>
-                </div>
-            </div>
-
-            <!-- SUBTAB 4: PROCEDURES SUITE -->
-            <div id="subtab-content-procedures" class="hidden space-y-6">
-                <!-- Endoscopy Log -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-camera text-amber-600 mr-1"></i> Endoscopy Procedure Report Log</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold mb-1">Procedure Type</label>
-                            <select id="endo-type" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                <option value="Upper EGD">Upper EGD</option>
-                                <option value="Colonoscopy">Colonoscopy</option>
-                                <option value="Sigmoidoscopy">Sigmoidoscopy</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Esophageal / Gastric Varices</label>
-                            <select id="endo-varices" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                <option value="None">None</option>
-                                <option value="Grade I (Small straight)">Grade I (Small straight)</option>
-                                <option value="Grade II (Medium tortuous)">Grade II (Medium tortuous)</option>
-                                <option value="Grade III (Large coil-like)">Grade III (Large coil-like)</option>
-                                <option value="Gastric Varices GOV1/2">Gastric Varices GOV1/2</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Peptic Ulcer Forrest Class</label>
-                            <select id="endo-forrest" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                <option value="N/A">N/A (No ulcer)</option>
-                                <option value="Forrest Ia (Spurt bleeding)">Forrest Ia (Active spurting)</option>
-                                <option value="Forrest Ib (Oozing bleed)">Forrest Ib (Active oozing)</option>
-                                <option value="Forrest IIa (Visible vessel)">Forrest IIa (Visible vessel)</option>
-                                <option value="Forrest IIb (Adherent clot)">Forrest IIb (Adherent clot)</option>
-                                <option value="Forrest IIc (Flat spot)">Forrest IIc (Flat spot)</option>
-                                <option value="Forrest III (Clean base)">Forrest III (Clean base)</option>
-                            </select>
-                        </div>
+                <div id="registration-fields" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Doctor Full Name *</label>
+                        <input type="text" id="reg-name" placeholder="e.g. Dr. Mostafa Mohamed" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
                     </div>
                     <div>
-                        <label class="block font-semibold mb-1 text-xs">Intervention & Summary Findings</label>
-                        <input type="text" id="endo-notes" placeholder="e.g. EVL x4 bands applied securely, Hemostasis achieved..." class="w-full text-xs p-2 border rounded-lg border-slate-300">
-                    </div>
-                    <div class="flex justify-end">
-                        <button onclick="addEndoscopyLog()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Save Endoscopy Report</button>
-                    </div>
-
-                    <div class="pt-3 border-t">
-                        <h5 class="font-bold text-xs text-slate-800 mb-2">Previous Endoscopy Logs:</h5>
-                        <div id="endo-history-list" class="space-y-2 text-xs"></div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Clinical Role / Rank *</label>
+                        <select id="reg-role" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+                            <option value="Resident Physician">Resident Physician</option>
+                            <option value="Specialist / Fellow">Specialist / Fellow</option>
+                            <option value="Consultant">Consultant</option>
+                            <option value="House Officer">House Officer</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Paracentesis & SBP Tracker -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-syringe text-indigo-600 mr-1"></i> Paracentesis & Ascitic Fluid Log</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold mb-1">Volume Removed (Liters)</label>
-                            <input type="number" step="0.5" id="para-vol" placeholder="e.g. 6.0" oninput="calcAlbuminDose()" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Ascitic PMN Count (/mm³)</label>
-                            <input type="number" id="para-pmn" placeholder="e.g. 320" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Ascitic Albumin (g/dL)</label>
-                            <input type="number" step="0.1" id="para-alb" placeholder="e.g. 0.6" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div class="bg-indigo-50 p-2.5 rounded-lg border border-indigo-200 flex flex-col justify-center">
-                            <span class="text-[11px] font-bold text-indigo-950">IV Albumin Requirement:</span>
-                            <span id="para-alb-rec" class="text-xs font-black text-indigo-700">0 g (No Albumin if &lt; 5 L)</span>
-                        </div>
-                    </div>
-                    <div class="flex justify-end">
-                        <button onclick="addParacentesisLog()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Save Paracentesis Log</button>
-                    </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address *</label>
+                    <input type="email" id="auth-email" required placeholder="doctor@hospital.org" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+                </div>
 
-                    <div class="pt-3 border-t">
-                        <h5 class="font-bold text-xs text-slate-800 mb-2">Paracentesis History & SBP Alerts:</h5>
-                        <div id="para-history-list" class="space-y-2 text-xs"></div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Password *</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+                </div>
+
+                <button type="submit" id="auth-submit-btn" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs py-3 rounded-xl shadow-lg transition">
+                    Access Workstation
+                </button>
+
+                <div class="text-center pt-2">
+                    <button type="button" onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-xs font-semibold text-slate-400 hover:text-amber-400 transition">
+                        New team doctor? Register account
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="main-app" class="hidden h-full flex flex-col">
+        
+        <!-- HEADER NAVIGATION -->
+        <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl text-amber-400">
+                        <i class="fa-solid fa-stethoscope text-xl"></i>
                     </div>
+                    <div>
+                        <h1 class="font-extrabold text-base sm:text-lg text-white leading-tight">GIT & Hepatology Station</h1>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="text-[11px] text-slate-400 font-semibold" id="header-user-display">Dr. Mostafa (Resident)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="openSBARModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow transition">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        <span>SBAR Handover</span>
+                    </button>
+                    <button onclick="openBackupModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-slate-700">
+                        <i class="fa-solid fa-database"></i>
+                        <span>Backup / Restore</span>
+                    </button>
+                    <button onclick="openAdmitModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-3.5 py-1.5 rounded-lg text-xs font-black flex items-center gap-1.5 shadow transition">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Admit Patient</span>
+                    </button>
+                    <button onclick="signOutDoctor()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-1.5 rounded-lg text-xs font-bold transition">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
             </div>
+        </header>
 
-            <!-- SUBTAB 5: CLINICAL CALCULATORS -->
-            <div id="subtab-content-calculators" class="hidden space-y-6">
+        <!-- MAIN APP WORKSPACE -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-4 overflow-y-auto">
+
+            <!-- VIEW 1: PATIENT ROSTER -->
+            <section id="view-roster" class="space-y-4">
                 
-                <!-- Child-Pugh Score -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-calculator text-amber-600 mr-1"></i> 1. Child-Pugh Classification for Cirrhosis</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block font-semibold mb-1">Total Bilirubin (mg/dL)</label>
-                                <select id="cp-bili" onchange="calcChildPugh()" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                    <option value="1">&lt; 2.0 mg/dL (1 Point)</option>
-                                    <option value="2">2.0 - 3.0 mg/dL (2 Points)</option>
-                                    <option value="3">&gt; 3.0 mg/dL (3 Points)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold mb-1">Serum Albumin (g/dL)</label>
-                                <select id="cp-alb" onchange="calcChildPugh()" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                    <option value="1">&gt; 3.5 g/dL (1 Point)</option>
-                                    <option value="2">2.8 - 3.5 g/dL (2 Points)</option>
-                                    <option value="3">&lt; 2.8 g/dL (3 Points)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold mb-1">INR Ratio</label>
-                                <select id="cp-inr" onchange="calcChildPugh()" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                    <option value="1">&lt; 1.7 (1 Point)</option>
-                                    <option value="2">1.7 - 2.3 (2 Points)</option>
-                                    <option value="3">&gt; 2.3 (3 Points)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold mb-1">Ascites Severity</label>
-                                <select id="cp-ascites" onchange="calcChildPugh()" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                    <option value="1">None (1 Point)</option>
-                                    <option value="2">Mild (2 Points)</option>
-                                    <option value="3">Moderate-Severe (3 Points)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block font-semibold mb-1">Hepatic Encephalopathy Grade</label>
-                                <select id="cp-enc" onchange="calcChildPugh()" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                    <option value="1">None (1 Point)</option>
-                                    <option value="2">Grade 1-2 (2 Points)</option>
-                                    <option value="3">Grade 3-4 (3 Points)</option>
-                                </select>
-                            </div>
-                        </div>
+                <!-- Category Tabs with Fixed Badge Alignment -->
+                <div class="bg-slate-900 p-1.5 rounded-xl border border-slate-800 flex gap-1.5 text-xs font-bold overflow-x-auto">
+                    <button onclick="switchCategory('inpatients')" id="cat-btn-inpatients" class="flex-1 min-w-0 py-2.5 px-3 rounded-lg transition bg-amber-500 text-slate-950 font-black shadow flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-bed shrink-0"></i>
+                        <span class="truncate">Active Inpatients</span>
+                        <span id="count-inpatients" class="shrink-0 inline-flex items-center justify-center bg-slate-950/30 text-slate-950 rounded-full px-2 py-0.5 text-[11px] font-black">0</span>
+                    </button>
+                    <button onclick="switchCategory('coadmitted')" id="cat-btn-coadmitted" class="flex-1 min-w-0 py-2.5 px-3 rounded-lg transition text-slate-400 hover:text-white flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-handshake shrink-0"></i>
+                        <span class="truncate">Co-Admitted Consults</span>
+                        <span id="count-coadmitted" class="shrink-0 inline-flex items-center justify-center bg-slate-800 text-slate-300 rounded-full px-2 py-0.5 text-[11px] font-bold">0</span>
+                    </button>
+                    <button onclick="switchCategory('discharged')" id="cat-btn-discharged" class="flex-1 min-w-0 py-2.5 px-3 rounded-lg transition text-slate-400 hover:text-white flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-box-archive shrink-0"></i>
+                        <span class="truncate">Discharged Archive</span>
+                        <span id="count-discharged" class="shrink-0 inline-flex items-center justify-center bg-slate-800 text-slate-300 rounded-full px-2 py-0.5 text-[11px] font-bold">0</span>
+                    </button>
+                </div>
 
-                        <div class="bg-amber-50 p-4 rounded-xl border border-amber-300 flex flex-col justify-between space-y-4">
-                            <div>
-                                <span class="text-xs font-bold text-amber-900 block uppercase">Calculated Output:</span>
-                                <h3 id="cp-result-points" class="text-3xl font-black text-amber-950 mt-1">5 Points</h3>
-                                <p id="cp-result-class" class="text-lg font-bold text-amber-800">Class A (Well-compensated)</p>
+                <!-- Search & Filter Bar -->
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-wrap gap-4 items-center justify-between">
+                    <div class="relative flex-1 min-w-[240px]">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500"></i>
+                        <input type="text" id="search-input" oninput="renderRoster()" placeholder="Search Name or Diagnosis..." class="w-full bg-slate-950 border border-slate-800 text-slate-100 pl-10 pr-4 py-2 text-xs rounded-lg focus:outline-none focus:border-amber-500">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="filter-critical" class="text-xs font-semibold text-slate-300">Critical Cases Only:</label>
+                        <input type="checkbox" id="filter-critical" onchange="renderRoster()" class="w-4 h-4 accent-rose-500 rounded">
+                    </div>
+                </div>
+
+                <!-- Grid Container -->
+                <div id="roster-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </section>
+
+            <!-- VIEW 2: PATIENT CASE SHEET -->
+            <section id="view-patient-detail" class="hidden space-y-4">
+                
+                <button onclick="showRoster()" class="text-slate-300 hover:text-white text-xs font-extrabold flex items-center gap-2 bg-slate-900 px-3.5 py-2 rounded-lg border border-slate-800 shadow-sm">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Back to Roster</span>
+                </button>
+
+                <!-- Patient Detail Header -->
+                <div id="detail-header-card" class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-3"></div>
+
+                <!-- Clinical Flags Bar -->
+                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 shadow-sm flex flex-wrap gap-2 items-center text-xs">
+                    <span class="font-bold text-slate-300">Clinical Status Flags:</span>
+                    <div id="clinical-tags-container" class="flex flex-wrap gap-1.5"></div>
+                    <button onclick="toggleTag('NPO for EGD')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded border border-slate-700 text-[11px] font-semibold">+ NPO EGD</button>
+                    <button onclick="toggleTag('Active GI Bleed')" class="px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded border border-rose-500/30 text-[11px] font-semibold">+ GI Bleed</button>
+                    <button onclick="toggleTag('Post-LVP (Albumin Given)')" class="px-2 py-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded border border-indigo-500/30 text-[11px] font-semibold">+ Post-LVP</button>
+                    <button onclick="toggleTag('Lactulose Titration')" class="px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded border border-amber-500/30 text-[11px] font-semibold">+ Lactulose</button>
+                </div>
+
+                <!-- Protocol Alert Banner -->
+                <div class="bg-rose-500/10 border-l-4 border-rose-500 p-4 rounded-xl shadow-sm space-y-1 text-xs">
+                    <h4 class="font-black text-rose-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Hepatology Safety & Clinical Protocol Warnings:
+                    </h4>
+                    <ul class="text-[11px] text-rose-300/90 list-disc list-inside space-y-0.5 font-medium">
+                        <li>Strictly avoid NSAIDs in liver cirrhosis due to severe risk of Acute Kidney Injury (HRS).</li>
+                        <li>Target Hb in acute variceal hemorrhage resuscitation is strictly 7-8 g/dL. Avoid over-transfusion.</li>
+                        <li>Discontinue Non-Selective Beta-Blockers (NSBBs) during acute hemorrhagic shock or SBP episodes.</li>
+                    </ul>
+                </div>
+
+                <!-- Navigation Subtabs -->
+                <div class="flex border-b border-slate-800 bg-slate-900 rounded-xl shadow-sm p-1.5 overflow-x-auto gap-1 text-xs sm:text-sm font-semibold">
+                    <button onclick="switchSubTab('ai')" id="subtab-ai" class="px-4 py-2 rounded-lg font-extrabold bg-amber-500 text-slate-950"><i class="fa-solid fa-brain mr-1.5"></i>AI Assistant & Guidelines</button>
+                    <button onclick="switchSubTab('exam')" id="subtab-exam" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white">Physical Exam</button>
+                    <button onclick="switchSubTab('soap')" id="subtab-soap" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white">SOAP Notes</button>
+                    <button onclick="switchSubTab('labs')" id="subtab-labs" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white">Labs & Trends</button>
+                    <button onclick="switchSubTab('procedures')" id="subtab-procedures" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white">Procedures</button>
+                    <button onclick="switchSubTab('calculators')" id="subtab-calculators" class="px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white">Calculators</button>
+                </div>
+
+                <!-- SUBTAB 0: AI CLINICAL ASSISTANT -->
+                <div id="subtab-content-ai" class="space-y-4">
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-5 rounded-xl border border-slate-800 shadow-md space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-brain text-amber-400 text-xl"></i>
+                                <h4 class="font-bold text-base">Offline AI Clinical Decision Assistant</h4>
                             </div>
-                            <button onclick="saveChildPughToPatient()" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs rounded-lg shadow">
-                                Save Score to Patient Chart
+                            <button onclick="runAIAssessment()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-rotate text-xs"></i> Re-Synthesize Chart Data
                             </button>
                         </div>
-                    </div>
-                </div>
 
-                <!-- MELD & MELD-Na -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-chart-line text-amber-600 mr-1"></i> 2. MELD & MELD-Na Score Calculator</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold mb-1">Bilirubin (mg/dL)</label>
-                            <input type="number" step="0.1" id="meld-bili" placeholder="1.2" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">INR</label>
-                            <input type="number" step="0.1" id="meld-inr" placeholder="1.4" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Creatinine (mg/dL)</label>
-                            <input type="number" step="0.1" id="meld-creat" placeholder="1.0" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Sodium Na (mEq/L)</label>
-                            <input type="number" id="meld-na" placeholder="135" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <button onclick="calculateMELD()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Calculate MELD</button>
-                        <div class="text-left font-bold text-sm">
-                            <span>MELD: <strong id="meld-score-res" class="text-amber-800">--</strong></span> | 
-                            <span>MELD-Na: <strong id="meldna-score-res" class="text-indigo-800">--</strong></span>
+                        <div id="ai-output-container" class="space-y-4 text-xs font-medium">
+                            <p class="text-slate-400">Click "Re-Synthesize Chart Data" or update patient parameters to generate an AI-driven differential diagnosis and clinical approach.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- SAAG Calculator -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-droplet text-blue-600 mr-1"></i> 3. SAAG (Serum-Ascites Albumin Gradient)</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold mb-1">Serum Albumin (g/dL)</label>
-                            <input type="number" step="0.1" id="saag-serum" placeholder="2.8" class="w-full p-2 border rounded-lg border-slate-300">
+                <!-- SUBTAB 1: PHYSICAL EXAM LOGGER -->
+                <div id="subtab-content-exam" class="hidden space-y-4">
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4 text-xs">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-user-check text-amber-400 mr-1.5"></i> Structured Physical Examination</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Vital Signs</label>
+                                <input type="text" id="exam-vitals" placeholder="e.g. BP 110/70, HR 88, Temp 37.1 C, SpO2 98%" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Asterixis (Flapping Tremor)</label>
+                                <select id="exam-asterixis" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                    <option value="Absent">Absent</option>
+                                    <option value="Mild / Intermittent">Mild / Intermittent (Grade I-II HE)</option>
+                                    <option value="Severe / Continuous">Severe / Continuous (Grade III HE)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Hepatic Encephalopathy (West-Haven)</label>
+                                <select id="exam-he" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                    <option value="Grade 0 (Unimpaired)">Grade 0 (Unimpaired)</option>
+                                    <option value="Grade I (Trivial lack of awareness)">Grade I (Trivial lack of awareness)</option>
+                                    <option value="Grade II (Lethargy/disorientation)">Grade II (Lethargy/disorientation)</option>
+                                    <option value="Grade III (Somnolence/stupor)">Grade III (Somnolence/stupor)</option>
+                                    <option value="Grade IV (Coma)">Grade IV (Coma)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Ascites Examination</label>
+                                <select id="exam-ascites" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                    <option value="None">None</option>
+                                    <option value="Mild (Ultrasound only)">Mild (Ultrasound only)</option>
+                                    <option value="Moderate (Shifting Dullness)">Moderate (Shifting Dullness)</option>
+                                    <option value="Tense Ascites (Fluid Wave)">Tense Ascites (Fluid Wave)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Jaundice / CLD Stigmata</label>
+                                <input type="text" id="exam-stigmata" placeholder="e.g. Scleral icterus, Spider nevi" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Abdominal Tenderness / Guarding</label>
+                                <input type="text" id="exam-tenderness" placeholder="e.g. Soft, diffuse mild tenderness" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Ascitic Fluid Albumin (g/dL)</label>
-                            <input type="number" step="0.1" id="saag-ascitic" placeholder="0.8" class="w-full p-2 border rounded-lg border-slate-300">
+
+                        <div class="flex justify-end">
+                            <button onclick="savePhysicalExam()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-lg shadow">Save Physical Exam</button>
                         </div>
-                    </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <button onclick="calculateSAAG()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Calculate SAAG</button>
-                        <div id="saag-result-box" class="text-xs font-bold text-slate-700">Output: --</div>
+
+                        <div class="pt-3 border-t border-slate-800">
+                            <h5 class="font-bold text-xs text-slate-300 mb-2">Latest Exam Note:</h5>
+                            <div id="exam-display-box" class="p-3 bg-slate-950 border border-slate-800 rounded-lg text-slate-300">No physical exam recorded yet.</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- FIB-4 & APRI -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-microscope text-emerald-600 mr-1"></i> 4. FIB-4 & APRI Non-Invasive Fibrosis Calculators</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold mb-1">Age (Years)</label>
-                            <input type="number" id="fib-age" placeholder="52" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">AST (U/L)</label>
-                            <input type="number" id="fib-ast" placeholder="65" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">ALT (U/L)</label>
-                            <input type="number" id="fib-alt" placeholder="48" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Platelets (x10³/µL)</label>
-                            <input type="number" id="fib-plt" placeholder="110" class="w-full p-2 border rounded-lg border-slate-300">
+                <!-- SUBTAB 2: SOAP NOTES -->
+                <div id="subtab-content-soap" class="hidden space-y-4">
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm space-y-3">
+                        <h4 class="font-bold text-xs sm:text-sm text-slate-100"><i class="fa-solid fa-pen-to-square text-amber-400 mr-1.5"></i> Add Daily SOAP Progress Note</h4>
+                        <textarea id="soap-input" rows="3" placeholder="S: Subjective findings&#10;O: Vital signs & physical examination&#10;A: Clinical impression & assessment&#10;P: Daily plan & orders..." class="w-full text-xs p-3 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg focus:outline-none focus:border-amber-500 font-medium"></textarea>
+                        <div class="flex justify-end">
+                            <button onclick="addSOAPNote()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs px-4 py-2 rounded-lg shadow">Save SOAP Note</button>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <button onclick="calculateFibrosisIndices()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Calculate FIB-4 & APRI</button>
-                        <div class="text-xs font-bold">
-                            <span>FIB-4: <strong id="fib4-res" class="text-emerald-800">--</strong></span> | 
-                            <span>APRI: <strong id="apri-res" class="text-emerald-800">--</strong></span>
+                    <div id="soap-notes-container" class="space-y-3"></div>
+                </div>
+
+                <!-- SUBTAB 3: LABS & TREND GRAPHS -->
+                <div id="subtab-content-labs" class="hidden space-y-6">
+                    
+                    <!-- Dynamic Standard Lab Panel Logger -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="font-bold text-sm text-slate-100"><i class="fa-solid fa-vial text-amber-400 mr-1.5"></i> Log Standard Lab Panel</h4>
+                            <button onclick="openPanelConfigModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-lg shadow flex items-center gap-1.5">
+                                <i class="fa-solid fa-sliders"></i>
+                                <span>Manage Panel Fields</span>
+                            </button>
+                        </div>
+                        
+                        <div id="standard-labs-form-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                            <!-- Dynamic fields rendered by JS -->
+                        </div>
+
+                        <div class="flex justify-end pt-2">
+                            <button onclick="addStandardLabs()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg shadow">Log Panel Entry</button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Labs & Serology Logger -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-3">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-vial-circle-check text-indigo-400 mr-1.5"></i> Custom Marker / Viral Serology Logger</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Test Name *</label>
+                                <input type="text" id="custom-lab-name" placeholder="e.g. HCV Ab, HBsAg, AFP, Tacrolimus" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Value / Result *</label>
+                                <input type="text" id="custom-lab-val" placeholder="e.g. Positive, 140, Reactive" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Unit (Optional)</label>
+                                <input type="text" id="custom-lab-unit" placeholder="e.g. U/L, IU/mL, ng/mL" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="addCustomLab()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Add Custom Marker</button>
+                        </div>
+                    </div>
+
+                    <!-- Trend Line Chart -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-3">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-chart-line text-amber-400 mr-1.5"></i> Serial Lab Parameter Trend Chart</h4>
+                        <div class="h-64 relative"><canvas id="labTrendChart"></canvas></div>
+                    </div>
+
+                    <!-- Custom Labs Timeline -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-3">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2">Logged Custom Tests & Serology Timeline</h4>
+                        <div id="custom-labs-timeline" class="space-y-2 text-xs"></div>
+                    </div>
+                </div>
+
+                <!-- SUBTAB 4: PROCEDURES SUITE -->
+                <div id="subtab-content-procedures" class="hidden space-y-6">
+                    <!-- Endoscopy Log -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-camera text-amber-400 mr-1.5"></i> Endoscopy Procedure Report Log</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Procedure Type</label>
+                                <select id="endo-type" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                    <option value="Upper EGD">Upper EGD</option>
+                                    <option value="Colonoscopy">Colonoscopy</option>
+                                    <option value="Sigmoidoscopy">Sigmoidoscopy</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Esophageal / Gastric Varices</label>
+                                <select id="endo-varices" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                    <option value="None">None</option>
+                                    <option value="Grade I (Small straight)">Grade I (Small straight)</option>
+                                    <option value="Grade II (Medium tortuous)">Grade II (Medium tortuous)</option>
+                                    <option value="Grade III (Large coil-like)">Grade III (Large coil-like)</option>
+                                    <option value="Gastric Varices GOV1/2">Gastric Varices GOV1/2</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Peptic Ulcer Forrest Class</label>
+                                <select id="endo-forrest" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                    <option value="N/A">N/A (No ulcer)</option>
+                                    <option value="Forrest Ia (Spurt bleeding)">Forrest Ia (Active spurting)</option>
+                                    <option value="Forrest Ib (Oozing bleed)">Forrest Ib (Active oozing)</option>
+                                    <option value="Forrest IIa (Visible vessel)">Forrest IIa (Visible vessel)</option>
+                                    <option value="Forrest IIb (Adherent clot)">Forrest IIb (Adherent clot)</option>
+                                    <option value="Forrest IIc (Flat spot)">Forrest IIc (Flat spot)</option>
+                                    <option value="Forrest III (Clean base)">Forrest III (Clean base)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-300 text-xs mb-1">Intervention & Summary Findings</label>
+                            <input type="text" id="endo-notes" placeholder="e.g. EVL x4 bands applied securely, Hemostasis achieved..." class="w-full text-xs p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="addEndoscopyLog()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg shadow">Save Endoscopy Report</button>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-800">
+                            <h5 class="font-bold text-xs text-slate-300 mb-2">Previous Endoscopy Logs:</h5>
+                            <div id="endo-history-list" class="space-y-2 text-xs"></div>
+                        </div>
+                    </div>
+
+                    <!-- Paracentesis & SBP Tracker -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-syringe text-indigo-400 mr-1.5"></i> Paracentesis & Ascitic Fluid Log</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Volume Removed (Liters)</label>
+                                <input type="number" step="0.5" id="para-vol" placeholder="e.g. 6.0" oninput="calcAlbuminDose()" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Ascitic PMN Count (/mm³)</label>
+                                <input type="number" id="para-pmn" placeholder="e.g. 320" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Ascitic Albumin (g/dL)</label>
+                                <input type="number" step="0.1" id="para-alb" placeholder="e.g. 0.6" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div class="bg-indigo-950/40 p-2.5 rounded-lg border border-indigo-800 flex flex-col justify-center">
+                                <span class="text-[11px] font-bold text-indigo-300">IV Albumin Requirement:</span>
+                                <span id="para-alb-rec" class="text-xs font-black text-indigo-400">0 g (No Albumin if &lt; 5 L)</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-end">
+                            <button onclick="addParacentesisLog()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Save Paracentesis Log</button>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-800">
+                            <h5 class="font-bold text-xs text-slate-300 mb-2">Paracentesis History & SBP Alerts:</h5>
+                            <div id="para-history-list" class="space-y-2 text-xs"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Glasgow-Blatchford Bleeding Score (GBS) -->
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="font-bold text-sm text-slate-900 border-b pb-2"><i class="fa-solid fa-notes-medical text-rose-600 mr-1"></i> 5. Glasgow-Blatchford Upper GI Bleed Score (GBS)</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold mb-1">BUN (mg/dL)</label>
-                            <input type="number" id="gbs-bun" placeholder="25" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Hemoglobin (g/dL)</label>
-                            <input type="number" step="0.1" id="gbs-hb" placeholder="8.5" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Systolic BP (mmHg)</label>
-                            <input type="number" id="gbs-sbp" placeholder="95" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Pulse (bpm)</label>
-                            <input type="number" id="gbs-pulse" placeholder="105" class="w-full p-2 border rounded-lg border-slate-300">
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Melena Present</label>
-                            <select id="gbs-melena" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                <option value="1">Yes (+1 point)</option>
-                                <option value="0">No (0 points)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold mb-1">Syncope Present</label>
-                            <select id="gbs-syncope" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                                <option value="2">Yes (+2 points)</option>
-                                <option value="0">No (0 points)</option>
-                            </select>
+                <!-- SUBTAB 5: CLINICAL CALCULATORS -->
+                <div id="subtab-content-calculators" class="hidden space-y-6">
+                    
+                    <!-- Child-Pugh Score -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-calculator text-amber-400 mr-1.5"></i> 1. Child-Pugh Classification for Cirrhosis</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block font-semibold text-slate-300 mb-1">Total Bilirubin (mg/dL)</label>
+                                    <select id="cp-bili" onchange="calcChildPugh()" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                        <option value="1">&lt; 2.0 mg/dL (1 Point)</option>
+                                        <option value="2">2.0 - 3.0 mg/dL (2 Points)</option>
+                                        <option value="3">&gt; 3.0 mg/dL (3 Points)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-300 mb-1">Serum Albumin (g/dL)</label>
+                                    <select id="cp-alb" onchange="calcChildPugh()" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                        <option value="1">&gt; 3.5 g/dL (1 Point)</option>
+                                        <option value="2">2.8 - 3.5 g/dL (2 Points)</option>
+                                        <option value="3">&lt; 2.8 g/dL (3 Points)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-300 mb-1">INR Ratio</label>
+                                    <select id="cp-inr" onchange="calcChildPugh()" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                        <option value="1">&lt; 1.7 (1 Point)</option>
+                                        <option value="2">1.7 - 2.3 (2 Points)</option>
+                                        <option value="3">&gt; 2.3 (3 Points)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-300 mb-1">Ascites Severity</label>
+                                    <select id="cp-ascites" onchange="calcChildPugh()" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                        <option value="1">None (1 Point)</option>
+                                        <option value="2">Mild (2 Points)</option>
+                                        <option value="3">Moderate-Severe (3 Points)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block font-semibold text-slate-300 mb-1">Hepatic Encephalopathy Grade</label>
+                                    <select id="cp-enc" onchange="calcChildPugh()" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                        <option value="1">None (1 Point)</option>
+                                        <option value="2">Grade 1-2 (2 Points)</option>
+                                        <option value="3">Grade 3-4 (3 Points)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="bg-amber-500/10 p-4 rounded-xl border border-amber-500/30 flex flex-col justify-between space-y-4">
+                                <div>
+                                    <span class="text-xs font-bold text-amber-400 block uppercase">Calculated Output:</span>
+                                    <h3 id="cp-result-points" class="text-3xl font-black text-amber-300 mt-1">5 Points</h3>
+                                    <p id="cp-result-class" class="text-lg font-bold text-amber-400">Class A (Well-compensated)</p>
+                                </div>
+                                <button onclick="saveChildPughToPatient()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs rounded-lg shadow">
+                                    Save Score to Patient Chart
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between pt-2">
-                        <button onclick="calculateGBS()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Calculate GBS Score</button>
-                        <div id="gbs-result-box" class="text-xs font-bold text-rose-900">GBS Output: --</div>
+
+                    <!-- MELD & MELD-Na -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-chart-line text-amber-400 mr-1.5"></i> 2. MELD & MELD-Na Score Calculator</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Bilirubin (mg/dL)</label>
+                                <input type="number" step="0.1" id="meld-bili" placeholder="1.2" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">INR</label>
+                                <input type="number" step="0.1" id="meld-inr" placeholder="1.4" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Creatinine (mg/dL)</label>
+                                <input type="number" step="0.1" id="meld-creat" placeholder="1.0" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Sodium Na (mEq/L)</label>
+                                <input type="number" id="meld-na" placeholder="135" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2">
+                            <button onclick="calculateMELD()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg shadow">Calculate MELD</button>
+                            <div class="text-left font-bold text-sm text-slate-200">
+                                <span>MELD: <strong id="meld-score-res" class="text-amber-400">--</strong></span> | 
+                                <span>MELD-Na: <strong id="meldna-score-res" class="text-indigo-400">--</strong></span>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- SAAG Calculator -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-droplet text-blue-400 mr-1.5"></i> 3. SAAG (Serum-Ascites Albumin Gradient)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Serum Albumin (g/dL)</label>
+                                <input type="number" step="0.1" id="saag-serum" placeholder="2.8" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Ascitic Fluid Albumin (g/dL)</label>
+                                <input type="number" step="0.1" id="saag-ascitic" placeholder="0.8" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2">
+                            <button onclick="calculateSAAG()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Calculate SAAG</button>
+                            <div id="saag-result-box" class="text-xs font-bold text-slate-300">Output: --</div>
+                        </div>
+                    </div>
+
+                    <!-- FIB-4 & APRI -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-microscope text-emerald-400 mr-1.5"></i> 4. FIB-4 & APRI Non-Invasive Fibrosis Calculators</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Age (Years)</label>
+                                <input type="number" id="fib-age" placeholder="52" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">AST (U/L)</label>
+                                <input type="number" id="fib-ast" placeholder="65" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">ALT (U/L)</label>
+                                <input type="number" id="fib-alt" placeholder="48" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Platelets (x10³/µL)</label>
+                                <input type="number" id="fib-plt" placeholder="110" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2">
+                            <button onclick="calculateFibrosisIndices()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Calculate FIB-4 & APRI</button>
+                            <div class="text-xs font-bold text-slate-200">
+                                <span>FIB-4: <strong id="fib4-res" class="text-emerald-400">--</strong></span> | 
+                                <span>APRI: <strong id="apri-res" class="text-emerald-400">--</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Glasgow-Blatchford Bleeding Score (GBS) -->
+                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm space-y-4">
+                        <h4 class="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2"><i class="fa-solid fa-notes-medical text-rose-400 mr-1.5"></i> 5. Glasgow-Blatchford Upper GI Bleed Score (GBS)</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">BUN (mg/dL)</label>
+                                <input type="number" id="gbs-bun" placeholder="25" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Hemoglobin (g/dL)</label>
+                                <input type="number" step="0.1" id="gbs-hb" placeholder="8.5" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Systolic BP (mmHg)</label>
+                                <input type="number" id="gbs-sbp" placeholder="95" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Pulse (bpm)</label>
+                                <input type="number" id="gbs-pulse" placeholder="105" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Melena Present</label>
+                                <select id="gbs-melena" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                    <option value="1">Yes (+1 point)</option>
+                                    <option value="0">No (0 points)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-300 mb-1">Syncope Present</label>
+                                <select id="gbs-syncope" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
+                                    <option value="2">Yes (+2 points)</option>
+                                    <option value="0">No (0 points)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between pt-2">
+                            <button onclick="calculateGBS()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-4 py-2 rounded-lg shadow">Calculate GBS Score</button>
+                            <div id="gbs-result-box" class="text-xs font-bold text-rose-300">GBS Output: --</div>
+                        </div>
+                    </div>
+
                 </div>
 
-            </div>
-
-        </section>
-    </main>
+            </section>
+        </main>
+    </div>
 
     <!-- MODAL 1: ADMIT PATIENT -->
-    <div id="modal-admit" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 border border-slate-200">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-lg text-slate-900">Admit New Patient</h3>
-                <button onclick="closeAdmitModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div id="modal-admit" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 border border-slate-800">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-lg text-white">Admit New Patient</h3>
+                <button onclick="closeAdmitModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
             <!-- Re-admission Banner -->
-            <div id="readmit-banner" class="hidden p-3.5 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-center justify-between">
+            <div id="readmit-banner" class="hidden p-3.5 bg-amber-500/10 border-2 border-amber-500/40 rounded-xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-black text-amber-950"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Patient match found in archive!</p>
-                    <p id="readmit-info" class="text-[11px] text-amber-800 font-medium"></p>
+                    <p class="text-xs font-black text-amber-300"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Patient match found in archive!</p>
+                    <p id="readmit-info" class="text-[11px] text-amber-200/80 font-medium"></p>
                 </div>
-                <button type="button" onclick="loadDischargedPatientToForm()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow">
+                <button type="button" onclick="loadDischargedPatientToForm()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-3 py-1.5 rounded-lg shadow">
                     Restore Archive Data
                 </button>
             </div>
@@ -574,26 +647,26 @@
             <form id="form-admit" onsubmit="handleAdmitSubmit(event)" class="space-y-4 text-xs sm:text-sm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Patient Name *</label>
-                        <input type="text" id="admit-name" oninput="checkArchiveNameMatch(this.value)" required class="w-full p-2 border rounded-lg border-slate-300">
+                        <label class="block font-semibold text-slate-300 mb-1">Patient Name *</label>
+                        <input type="text" id="admit-name" oninput="checkArchiveNameMatch(this.value)" required class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
                     </div>
                     <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Age / Gender *</label>
-                        <input type="text" id="admit-age-gender" placeholder="e.g. 54M" required class="w-full p-2 border rounded-lg border-slate-300">
+                        <label class="block font-semibold text-slate-300 mb-1">Age / Gender *</label>
+                        <input type="text" id="admit-age-gender" placeholder="e.g. 54M" required class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Category *</label>
-                        <select id="admit-category" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
+                        <label class="block font-semibold text-slate-300 mb-1">Category *</label>
+                        <select id="admit-category" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
                             <option value="inpatients">Active Inpatient</option>
                             <option value="coadmitted">Co-Admitted Consult</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block font-semibold text-slate-700 mb-1">Acuity Level</label>
-                        <select id="admit-critical" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
+                        <label class="block font-semibold text-slate-300 mb-1">Acuity Level</label>
+                        <select id="admit-critical" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
                             <option value="false">Stable</option>
                             <option value="true">CRITICAL / High Risk</option>
                         </select>
@@ -601,90 +674,66 @@
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Chief Complaint (CC) *</label>
-                    <input type="text" id="admit-cc" required placeholder="e.g. Hematemesis x2 & Melena" class="w-full p-2 border rounded-lg border-slate-300">
+                    <label class="block font-semibold text-slate-300 mb-1">Chief Complaint (CC) *</label>
+                    <input type="text" id="admit-cc" required placeholder="e.g. Hematemesis x2 & Melena" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
                 </div>
 
                 <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Primary Diagnosis *</label>
-                    <input type="text" id="admit-dx" required placeholder="e.g. Decompensated Cirrhosis, Acute Variceal Bleed" class="w-full p-2 border rounded-lg border-slate-300">
+                    <label class="block font-semibold text-slate-300 mb-1">Primary Diagnosis *</label>
+                    <input type="text" id="admit-dx" required placeholder="e.g. Decompensated Cirrhosis, Acute Variceal Bleed" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
                 </div>
 
-                <div class="flex justify-end gap-2 pt-3 border-t">
-                    <button type="button" onclick="closeAdmitModal()" class="px-4 py-2 font-semibold text-slate-600 bg-slate-100 rounded-lg">Cancel</button>
-                    <button type="submit" class="px-4 py-2 font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow">Save & Admit</button>
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="closeAdmitModal()" class="px-4 py-2 font-semibold text-slate-400 bg-slate-800 rounded-lg">Cancel</button>
+                    <button type="submit" class="px-4 py-2 font-bold text-slate-950 bg-amber-500 hover:bg-amber-600 rounded-lg shadow">Save & Admit</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 2: USER SWITCHER -->
-    <div id="modal-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
-            <h3 class="font-bold text-base text-slate-900">Clinician Profile Settings</h3>
-            <div class="space-y-3 text-xs sm:text-sm">
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Doctor Name</label>
-                    <input type="text" id="user-name-input" value="Dr. Mostafa" class="w-full p-2 border rounded-lg border-slate-300">
-                </div>
-                <div>
-                    <label class="block font-semibold text-slate-700 mb-1">Clinical Role / Rank</label>
-                    <select id="user-role-input" class="w-full p-2 border rounded-lg border-slate-300 bg-white">
-                        <option value="Resident">Resident</option>
-                        <option value="Specialist">Specialist</option>
-                        <option value="Consultant">Consultant</option>
-                    </select>
-                </div>
-                <button onclick="saveActiveUser()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg shadow">Save Active User</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: MANAGE STANDARD PANEL FIELDS -->
-    <div id="modal-panel-config" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 space-y-4 border border-slate-200">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-base text-slate-900"><i class="fa-solid fa-sliders text-amber-600 mr-1"></i> Standard Lab Panel Configurator</h3>
-                <button onclick="closePanelConfigModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- MODAL 2: MANAGE STANDARD PANEL FIELDS -->
+    <div id="modal-panel-config" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-xl shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto p-6 space-y-4 border border-slate-800">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-white"><i class="fa-solid fa-sliders text-amber-400 mr-1.5"></i> Standard Lab Panel Configurator</h3>
+                <button onclick="closePanelConfigModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <!-- Add new field -->
-            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-2 text-xs">
-                <h5 class="font-bold text-slate-800">Add New Standard Field:</h5>
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2 text-xs">
+                <h5 class="font-bold text-slate-200">Add New Standard Field:</h5>
                 <div class="grid grid-cols-3 gap-2">
-                    <input type="text" id="new-field-key" placeholder="Key (e.g. ggt)" class="p-1.5 border rounded">
-                    <input type="text" id="new-field-label" placeholder="Label (e.g. GGT)" class="p-1.5 border rounded">
-                    <input type="text" id="new-field-unit" placeholder="Unit (e.g. U/L)" class="p-1.5 border rounded">
+                    <input type="text" id="new-field-key" placeholder="Key (e.g. ggt)" class="p-1.5 bg-slate-900 border border-slate-800 text-slate-100 rounded">
+                    <input type="text" id="new-field-label" placeholder="Label (e.g. GGT)" class="p-1.5 bg-slate-900 border border-slate-800 text-slate-100 rounded">
+                    <input type="text" id="new-field-unit" placeholder="Unit (e.g. U/L)" class="p-1.5 bg-slate-900 border border-slate-800 text-slate-100 rounded">
                 </div>
                 <div class="flex justify-end">
                     <button onclick="addNewStandardPanelField()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded">Add Field</button>
                 </div>
             </div>
 
-            <!-- Active List -->
             <div class="space-y-2">
-                <h5 class="font-bold text-xs text-slate-800">Current Standard Panel Fields:</h5>
+                <h5 class="font-bold text-xs text-slate-300">Current Standard Panel Fields:</h5>
                 <div id="panel-fields-list" class="space-y-1.5 text-xs"></div>
             </div>
 
-            <div class="flex justify-between pt-3 border-t">
-                <button onclick="resetStandardPanelToDefault()" class="text-rose-600 hover:text-rose-800 font-bold text-xs">Reset to Default</button>
-                <button onclick="closePanelConfigModal()" class="bg-slate-900 text-white font-bold text-xs px-4 py-2 rounded-lg">Done</button>
+            <div class="flex justify-between pt-3 border-t border-slate-800">
+                <button onclick="resetStandardPanelToDefault()" class="text-rose-400 hover:text-rose-300 font-bold text-xs">Reset to Default</button>
+                <button onclick="closePanelConfigModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs px-4 py-2 rounded-lg">Done</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 4: SBAR HANDOVER GENERATOR -->
-    <div id="modal-sbar" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-lg text-slate-900"><i class="fa-solid fa-clipboard-list text-indigo-600 mr-1"></i> SBAR Night Shift Handover Summary</h3>
-                <button onclick="closeSBARModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <!-- MODAL 3: SBAR HANDOVER GENERATOR -->
+    <div id="modal-sbar" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 border border-slate-800">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-lg text-white"><i class="fa-solid fa-clipboard-list text-indigo-400 mr-1.5"></i> SBAR Night Shift Handover Summary</h3>
+                <button onclick="closeSBARModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <p class="text-xs text-slate-500">Structured SBAR summary compiled for active inpatients ready to copy and share for night shift handover.</p>
-            <textarea id="sbar-text-area" rows="12" readonly class="w-full text-xs font-mono p-3 bg-slate-50 border rounded-xl border-slate-300 focus:outline-none"></textarea>
+            <p class="text-xs text-slate-400">Structured SBAR summary compiled for active inpatients ready to copy and share for shift handovers.</p>
+            <textarea id="sbar-text-area" rows="12" readonly class="w-full text-xs font-mono p-3 bg-slate-950 border border-slate-800 text-slate-200 rounded-xl focus:outline-none"></textarea>
             <div class="flex justify-end gap-2">
-                <button onclick="closeSBARModal()" class="px-4 py-2 font-semibold text-xs text-slate-600 bg-slate-100 rounded-lg">Cancel</button>
+                <button onclick="closeSBARModal()" class="px-4 py-2 font-semibold text-xs text-slate-400 bg-slate-800 rounded-lg">Cancel</button>
                 <button onclick="copySBARText()" class="px-4 py-2 font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow flex items-center gap-1.5">
                     <i class="fa-solid fa-copy"></i>
                     <span>Copy SBAR Report</span>
@@ -693,25 +742,25 @@
         </div>
     </div>
 
-    <!-- MODAL 5: BACKUP & RESTORE -->
-    <div id="modal-backup" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
-            <h3 class="font-bold text-base text-slate-900">Backup & Restore Patient Records</h3>
-            <p class="text-xs text-slate-600">Export your ward data as a JSON file or restore from a previous backup.</p>
+    <!-- MODAL 4: BACKUP & RESTORE -->
+    <div id="modal-backup" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-800">
+            <h3 class="font-bold text-base text-white">Backup & Restore Patient Records</h3>
+            <p class="text-xs text-slate-400">Export your ward data as a JSON file or restore from a previous backup.</p>
             <div class="space-y-2">
-                <button onclick="exportJSONData()" class="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow">Export Backup JSON File</button>
-                <label class="block text-center py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-800 font-bold text-xs rounded-lg cursor-pointer">
+                <button onclick="exportJSONData()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-lg shadow">Export Backup JSON File</button>
+                <label class="block text-center py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs rounded-lg cursor-pointer">
                     <span>Import Backup JSON File</span>
                     <input type="file" id="import-json-file" accept=".json" onchange="importJSONData(event)" class="hidden">
                 </label>
             </div>
             <div class="flex justify-end pt-2">
-                <button onclick="closeBackupModal()" class="px-4 py-1.5 text-xs text-slate-600 bg-slate-100 rounded-lg font-semibold">Cancel</button>
+                <button onclick="closeBackupModal()" class="px-4 py-1.5 text-xs text-slate-400 bg-slate-800 rounded-lg font-semibold">Cancel</button>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <!-- JAVASCRIPT APPLICATION ENGINE -->
     <script>
         const DEFAULT_STANDARD_FIELDS = [
             { key: 'bili', label: 'Total Bilirubin', unit: 'mg/dL', type: 'number', step: '0.1' },
@@ -732,7 +781,7 @@
 
         let appData = {
             patients: [],
-            activeUser: { name: "Dr. Mostafa", role: "Resident" },
+            activeUser: null,
             standardPanelFields: JSON.parse(JSON.stringify(DEFAULT_STANDARD_FIELDS))
         };
 
@@ -740,9 +789,10 @@
         let currentPatientId = null;
         let matchedArchivePatient = null;
         let trendChartInstance = null;
+        let isRegistrationMode = false;
 
         window.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('git_ward_app_ai_v1');
+            const saved = localStorage.getItem('git_ward_app_ai_v2');
             if (saved) {
                 try { 
                     appData = JSON.parse(saved); 
@@ -751,30 +801,81 @@
                     }
                 } catch(e) {}
             }
+            
+            if (appData.activeUser) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                updateUserDisplay();
+            } else {
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
+
             if (!appData.patients || appData.patients.length === 0) {
                 seedInitialData();
             }
-            updateUserDisplay();
             renderRoster();
         });
 
         function saveData() {
-            localStorage.setItem('git_ward_app_ai_v1', JSON.stringify(appData));
+            localStorage.setItem('git_ward_app_ai_v2', JSON.stringify(appData));
+        }
+
+        /* AUTHENTICATION LOGIC */
+        function toggleAuthMode() {
+            isRegistrationMode = !isRegistrationMode;
+            const regFields = document.getElementById('registration-fields');
+            const modeTitle = document.getElementById('auth-mode-title');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const toggleBtn = document.getElementById('auth-toggle-btn');
+
+            if (isRegistrationMode) {
+                regFields.classList.remove('hidden');
+                modeTitle.innerText = "Register New Clinician Account";
+                submitBtn.innerText = "Create Account & Enter";
+                toggleBtn.innerText = "Already registered? Sign In";
+            } else {
+                regFields.classList.add('hidden');
+                modeTitle.innerText = "Sign In to Ward Workstation";
+                submitBtn.innerText = "Access Workstation";
+                toggleBtn.innerText = "New team doctor? Register account";
+            }
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value.trim();
+            
+            if (isRegistrationMode) {
+                const name = document.getElementById('reg-name').value.trim();
+                const role = document.getElementById('reg-role').value;
+                if (!name) { alert('Please enter your full name.'); return; }
+                appData.activeUser = { email, name, role };
+            } else {
+                appData.activeUser = {
+                    email,
+                    name: email.split('@')[0].replace('.', ' '),
+                    role: "Resident Physician"
+                };
+            }
+
+            saveData();
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            updateUserDisplay();
+        }
+
+        function signOutDoctor() {
+            if (confirm('Sign out of active workstation session?')) {
+                appData.activeUser = null;
+                saveData();
+                document.getElementById('main-app').classList.add('hidden');
+                document.getElementById('auth-screen').classList.remove('hidden');
+            }
         }
 
         function updateUserDisplay() {
-            document.getElementById('nav-user-display').innerText = `${appData.activeUser.name} (${appData.activeUser.role})`;
-        }
-
-        function openUserModal() { document.getElementById('modal-user').classList.remove('hidden'); }
-        function saveActiveUser() {
-            appData.activeUser = {
-                name: document.getElementById('user-name-input').value.trim() || "Dr. Mostafa",
-                role: document.getElementById('user-role-input').value
-            };
-            saveData();
-            updateUserDisplay();
-            document.getElementById('modal-user').classList.add('hidden');
+            if (!appData.activeUser) return;
+            document.getElementById('header-user-display').innerText = `${appData.activeUser.name} (${appData.activeUser.role})`;
         }
 
         /* CLINICAL TAGS */
@@ -794,13 +895,13 @@
             const container = document.getElementById('clinical-tags-container');
             if (!p || !p.tags) { container.innerHTML = ''; return; }
             container.innerHTML = p.tags.map(t => `
-                <span class="px-2 py-0.5 bg-amber-600 text-white font-bold rounded text-[11px] flex items-center gap-1">
+                <span class="px-2 py-0.5 bg-amber-500 text-slate-950 font-extrabold rounded text-[11px] flex items-center gap-1 shadow">
                     ${t} <i class="fa-solid fa-xmark cursor-pointer" onclick="toggleTag('${t}')"></i>
                 </span>
             `).join('');
         }
 
-        /* OFFLINE AI ASSISTANT LOGIC */
+        /* OFFLINE AI ASSISTANT ENGINE */
         function runAIAssessment() {
             const p = appData.patients.find(x => x.id === currentPatientId);
             if (!p) return;
@@ -810,18 +911,13 @@
             const latestExam = p.physicalExam || {};
             const paraLogs = p.paraLogs || [];
             const hasSBP = paraLogs.some(pr => pr.isSBP);
-            const isLVP = paraLogs.some(pr => pr.vol >= 5);
 
             let diffDx = [];
             let steps = [];
             let guidelines = [];
 
-            // Rule-based Clinical AI Inference
-            const bili = latestLabs.bili || 0;
-            const inr = latestLabs.inr || 0;
             const cr = latestLabs.cr || 0;
             const hb = latestLabs.hb || 0;
-            const plt = latestLabs.plt || 0;
 
             if (p.diagnosis.toLowerCase().includes('bleed') || p.diagnosis.toLowerCase().includes('hematemesis') || (hb > 0 && hb < 8)) {
                 diffDx.push({ dx: 'Acute Upper GI Hemorrhage (Esophageal/Gastric Variceal vs Ulcer Bleed)', prob: '85%' });
@@ -849,7 +945,7 @@
                 steps.push('Withdraw all diuretics, NSAIDs, and antihypertensive agents.');
                 steps.push('Administer IV Albumin volume expansion (1 g/kg/day for 48 hours).');
                 steps.push('If no response, initiate Terlipressin 1mg Q6H + Albumin for HRS-AKI.');
-                guidelines.push('ICA/EASL 2026 Consensus: HRS-AKI diagnosis no longer requires a fixed creatinine cutoff of 2.5 mg/dL; acute rise of ≥0.3 mg/dL within 48h qualifies.');
+                guidelines.push('ICA/EASL Consensus: HRS-AKI diagnosis no longer requires a fixed creatinine cutoff of 2.5 mg/dL; acute rise of ≥0.3 mg/dL within 48h qualifies.');
             }
 
             if (latestExam.he && latestExam.he !== 'Grade 0 (Unimpaired)') {
@@ -866,21 +962,21 @@
             }
 
             container.innerHTML = `
-                <div class="bg-indigo-950/70 p-4 rounded-xl border border-indigo-700/60 space-y-3">
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
                     <h5 class="font-bold text-amber-400 text-xs flex items-center gap-1.5"><i class="fa-solid fa-list-check"></i> Ranked Differential Diagnoses:</h5>
                     <div class="space-y-1.5">
-                        ${diffDx.map(d => `<div class="flex justify-between items-center bg-indigo-900/80 p-2 rounded border border-indigo-800"><span class="font-bold text-white">${d.dx}</span><span class="bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-black text-[10px]">${d.prob}</span></div>`).join('')}
+                        ${diffDx.map(d => `<div class="flex justify-between items-center bg-slate-900 p-2.5 rounded border border-slate-800"><span class="font-bold text-white">${d.dx}</span><span class="bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-black text-[10px]">${d.prob}</span></div>`).join('')}
                     </div>
                 </div>
 
-                <div class="bg-indigo-950/70 p-4 rounded-xl border border-indigo-700/60 space-y-2">
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
                     <h5 class="font-bold text-emerald-400 text-xs flex items-center gap-1.5"><i class="fa-solid fa-square-check"></i> Recommended Diagnostic & Management Approach:</h5>
-                    <ol class="list-decimal list-inside space-y-1 text-slate-200">
+                    <ol class="list-decimal list-inside space-y-1 text-slate-300">
                         ${steps.map(s => `<li>${s}</li>`).join('')}
                     </ol>
                 </div>
 
-                <div class="bg-indigo-950/70 p-4 rounded-xl border border-indigo-700/60 space-y-2">
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
                     <h5 class="font-bold text-sky-400 text-xs flex items-center gap-1.5"><i class="fa-solid fa-book-bookmark"></i> AASLD / EASL Clinical Guideline Alerts:</h5>
                     <ul class="list-disc list-inside space-y-1 text-slate-300">
                         ${guidelines.map(g => `<li>${g}</li>`).join('')}
@@ -917,7 +1013,7 @@
 
             box.innerHTML = `
                 <div class="space-y-1">
-                    <div class="flex justify-between font-bold text-slate-900 border-b pb-1"><span>Exam Date: ${ex.date}</span></div>
+                    <div class="flex justify-between font-bold text-slate-100 border-b border-slate-800 pb-1"><span>Exam Date: ${ex.date}</span></div>
                     <p><strong>Vitals:</strong> ${ex.vitals || 'N/A'}</p>
                     <p><strong>Asterixis:</strong> ${ex.asterixis} | <strong>HE Grade:</strong> ${ex.he}</p>
                     <p><strong>Ascites:</strong> ${ex.ascites} | <strong>CLD Stigmata:</strong> ${ex.stigmata || 'None'}</p>
@@ -940,12 +1036,12 @@
         function renderPanelFieldsManager() {
             const container = document.getElementById('panel-fields-list');
             container.innerHTML = appData.standardPanelFields.map((f, idx) => `
-                <div class="flex justify-between items-center p-2 bg-slate-100 rounded border">
+                <div class="flex justify-between items-center p-2 bg-slate-950 rounded border border-slate-800">
                     <div>
-                        <strong class="text-slate-800">${f.label}</strong> 
-                        <span class="text-slate-500">(${f.unit || 'no unit'}) [key: ${f.key}]</span>
+                        <strong class="text-slate-200">${f.label}</strong> 
+                        <span class="text-slate-400">(${f.unit || 'no unit'}) [key: ${f.key}]</span>
                     </div>
-                    <button onclick="removeStandardPanelField(${idx})" class="text-rose-600 hover:text-rose-800 font-bold">Remove</button>
+                    <button onclick="removeStandardPanelField(${idx})" class="text-rose-400 hover:text-rose-300 font-bold">Remove</button>
                 </div>
             `).join('');
         }
@@ -986,8 +1082,8 @@
             if (!grid) return;
             grid.innerHTML = appData.standardPanelFields.map(f => `
                 <div>
-                    <label class="block font-semibold mb-1">${f.label} ${f.unit ? `(${f.unit})` : ''}</label>
-                    <input type="number" step="${f.step || '0.1'}" id="std-lab-${f.key}" class="w-full p-2 border rounded-lg border-slate-300">
+                    <label class="block font-semibold text-slate-300 mb-1">${f.label} ${f.unit ? `(${f.unit})` : ''}</label>
+                    <input type="number" step="${f.step || '0.1'}" id="std-lab-${f.key}" class="w-full p-2 bg-slate-950 border border-slate-800 text-slate-100 rounded-lg">
                 </div>
             `).join('');
         }
@@ -996,10 +1092,13 @@
             activeCategory = cat;
             ['inpatients', 'coadmitted', 'discharged'].forEach(c => {
                 const btn = document.getElementById(`cat-btn-${c}`);
+                const badge = document.getElementById(`count-${c}`);
                 if (c === cat) {
-                    btn.className = "flex-1 py-2.5 px-3 text-xs sm:text-sm font-extrabold rounded-lg transition bg-amber-100 text-amber-900 border border-amber-300 shadow-sm flex items-center justify-center gap-1.5";
+                    btn.className = "flex-1 min-w-0 py-2.5 px-3 rounded-lg transition bg-amber-500 text-slate-950 font-black shadow flex items-center justify-center gap-2";
+                    badge.className = "shrink-0 inline-flex items-center justify-center bg-slate-950/30 text-slate-950 rounded-full px-2 py-0.5 text-[11px] font-black";
                 } else {
-                    btn.className = "flex-1 py-2.5 px-3 text-xs sm:text-sm font-bold rounded-lg transition text-slate-700 hover:text-slate-900 flex items-center justify-center gap-1.5";
+                    btn.className = "flex-1 min-w-0 py-2.5 px-3 rounded-lg transition text-slate-400 hover:text-white flex items-center justify-center gap-2";
+                    badge.className = "shrink-0 inline-flex items-center justify-center bg-slate-800 text-slate-300 rounded-full px-2 py-0.5 text-[11px] font-bold";
                 }
             });
             showRoster();
@@ -1030,26 +1129,26 @@
             });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-xl border border-dashed border-slate-300"><p class="text-sm font-semibold">No patients found in this section.</p></div>`;
+                container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 bg-slate-900 rounded-xl border border-dashed border-slate-800"><p class="text-xs sm:text-sm font-semibold">No patients found in this section.</p></div>`;
                 return;
             }
 
             container.innerHTML = filtered.map(p => `
-                <div class="bg-white rounded-xl shadow-sm border ${p.isCritical ? 'border-rose-500 critical-pulse' : 'border-slate-200'} p-4 flex flex-col justify-between space-y-3">
+                <div class="bg-slate-900 rounded-xl shadow-sm border ${p.isCritical ? 'border-rose-500/80 critical-pulse' : 'border-slate-800'} p-4 flex flex-col justify-between space-y-3">
                     <div>
                         <div class="flex items-start justify-between gap-2 mb-1">
-                            <h3 class="font-bold text-base text-slate-900">${p.name}</h3>
-                            ${p.isCritical ? '<span class="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded">CRITICAL</span>' : ''}
+                            <h3 class="font-bold text-base text-white">${p.name}</h3>
+                            ${p.isCritical ? '<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-black px-2 py-0.5 rounded">CRITICAL</span>' : ''}
                         </div>
-                        <p class="text-xs text-slate-500 font-medium">${p.ageGender} • Admitted: ${p.admitDate}</p>
-                        <p class="text-xs font-semibold text-amber-800 mt-2"><i class="fa-solid fa-stethoscope mr-1"></i> ${p.diagnosis}</p>
+                        <p class="text-xs text-slate-400 font-medium">${p.ageGender} • Admitted: ${p.admitDate}</p>
+                        <p class="text-xs font-semibold text-amber-400 mt-2"><i class="fa-solid fa-stethoscope mr-1"></i> ${p.diagnosis}</p>
                     </div>
 
-                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <button onclick="openPatientDetail('${p.id}')" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <button onclick="openPatientDetail('${p.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 border border-slate-700">
                             <span>Open Chart</span>
                         </button>
-                        <button onclick="deletePatient('${p.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">
+                        <button onclick="deletePatient('${p.id}')" class="text-rose-400 hover:text-rose-300 text-xs font-semibold">
                             <i class="fa-solid fa-trash mr-1"></i>Delete
                         </button>
                     </div>
@@ -1142,15 +1241,15 @@
             document.getElementById('detail-header-card').innerHTML = `
                 <div class="flex justify-between items-start gap-4">
                     <div>
-                        <h2 class="text-xl font-black text-slate-900">${p.name} <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold">${p.ageGender}</span></h2>
-                        <p class="text-xs text-slate-500 mt-1">Admitted: ${p.admitDate}</p>
+                        <h2 class="text-xl font-black text-white">${p.name} <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold">${p.ageGender}</span></h2>
+                        <p class="text-xs text-slate-400 mt-1">Admitted: ${p.admitDate}</p>
                     </div>
-                    ${p.category !== 'discharged' ? `<button onclick="dischargePatient('${p.id}')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow">Discharge Patient</button>` : '<span class="text-xs bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold">Discharged Archive</span>'}
+                    ${p.category !== 'discharged' ? `<button onclick="dischargePatient('${p.id}')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow">Discharge Patient</button>` : '<span class="text-xs bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg font-bold border border-slate-700">Discharged Archive</span>'}
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-3 border-t border-slate-100">
-                    <div><strong class="text-slate-700">Diagnosis:</strong> ${p.diagnosis}</div>
-                    <div><strong class="text-slate-700">Chief Complaint:</strong> ${p.chiefComplaint}</div>
-                    <div><strong class="text-slate-700">Child-Pugh Score:</strong> <span class="font-bold text-amber-800">${p.childScore || '5 Points (Class A)'}</span></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs pt-3 border-t border-slate-800">
+                    <div><strong class="text-slate-300">Diagnosis:</strong> ${p.diagnosis}</div>
+                    <div><strong class="text-slate-300">Chief Complaint:</strong> ${p.chiefComplaint}</div>
+                    <div><strong class="text-slate-300">Child-Pugh Score:</strong> <span class="font-bold text-amber-400">${p.childScore || '5 Points (Class A)'}</span></div>
                 </div>
             `;
 
@@ -1175,10 +1274,10 @@
                 const btn = document.getElementById(`subtab-${s}`);
                 const content = document.getElementById(`subtab-content-${s}`);
                 if (s === sub) {
-                    btn.className = "px-4 py-2 rounded-lg font-extrabold bg-amber-100 text-amber-900";
+                    btn.className = "px-4 py-2 rounded-lg font-extrabold bg-amber-500 text-slate-950";
                     content.classList.remove('hidden');
                 } else {
-                    btn.className = "px-4 py-2 rounded-lg font-semibold text-slate-600 hover:text-slate-900";
+                    btn.className = "px-4 py-2 rounded-lg font-semibold text-slate-400 hover:text-white";
                     content.classList.add('hidden');
                 }
             });
@@ -1194,12 +1293,12 @@
             const p = appData.patients.find(x => x.id === currentPatientId);
             const container = document.getElementById('soap-notes-container');
             container.innerHTML = (p.soaps || []).map(s => `
-                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs space-y-1">
-                    <div class="flex justify-between font-bold text-slate-500">
+                <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 shadow-sm text-xs space-y-1">
+                    <div class="flex justify-between font-bold text-slate-400">
                         <span><i class="fa-solid fa-user-doctor mr-1"></i>${s.author}</span>
                         <span>${s.date}</span>
                     </div>
-                    <p class="text-slate-800 whitespace-pre-line font-medium">${s.text}</p>
+                    <p class="text-slate-200 whitespace-pre-line font-medium">${s.text}</p>
                 </div>
             `).join('');
         }
@@ -1209,8 +1308,10 @@
             if (!text) return;
             const p = appData.patients.find(x => x.id === currentPatientId);
             if (!p.soaps) p.soaps = [];
+            
+            const authorName = appData.activeUser ? `${appData.activeUser.name} (${appData.activeUser.role})` : 'Resident Doctor';
             p.soaps.unshift({
-                author: `${appData.activeUser.name} (${appData.activeUser.role})`,
+                author: authorName,
                 date: new Date().toLocaleString('en-US'),
                 text: text
             });
@@ -1258,11 +1359,12 @@
             const p = appData.patients.find(x => x.id === currentPatientId);
             if (!p.customLabs) p.customLabs = [];
 
+            const authorName = appData.activeUser ? `${appData.activeUser.name} (${appData.activeUser.role})` : 'Resident Doctor';
             p.customLabs.unshift({
                 name: name,
                 val: val,
                 unit: unit,
-                author: `${appData.activeUser.name} (${appData.activeUser.role})`,
+                author: authorName,
                 date: new Date().toLocaleString('en-US')
             });
 
@@ -1278,16 +1380,16 @@
             const p = appData.patients.find(x => x.id === currentPatientId);
             const container = document.getElementById('custom-labs-timeline');
             if (!p || !p.customLabs || p.customLabs.length === 0) {
-                container.innerHTML = `<p class="text-slate-400">No custom tests logged yet.</p>`;
+                container.innerHTML = `<p class="text-slate-500">No custom tests logged yet.</p>`;
                 return;
             }
             container.innerHTML = p.customLabs.map(l => `
-                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex justify-between items-center p-3 bg-slate-950 rounded-lg border border-slate-800">
                     <div>
-                        <strong class="text-slate-900">${l.name}</strong>: 
-                        <span class="font-bold text-indigo-700">${l.val} ${l.unit || ''}</span>
+                        <strong class="text-slate-200">${l.name}</strong>: 
+                        <span class="font-bold text-indigo-400">${l.val} ${l.unit || ''}</span>
                     </div>
-                    <div class="text-[11px] text-slate-500">
+                    <div class="text-[11px] text-slate-400">
                         <span>${l.author}</span> • <span>${l.date}</span>
                     </div>
                 </div>
@@ -1302,7 +1404,7 @@
             const labs = patient.standardLabs || [];
             const labels = labs.map(l => l.date);
 
-            const chartColors = ['#d97706', '#dc2626', '#2563eb', '#059669', '#7c3aed'];
+            const chartColors = ['#f59e0b', '#ef4444', '#3b82f6', '#10b981', '#8b5cf6'];
             const activeKeysToGraph = appData.standardPanelFields.slice(0, 5);
 
             const datasets = activeKeysToGraph.map((f, i) => ({
@@ -1321,7 +1423,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } }
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
+                    }
                 }
             });
         }
@@ -1336,9 +1441,10 @@
             const p = appData.patients.find(x => x.id === currentPatientId);
             if (!p.endoLogs) p.endoLogs = [];
 
+            const authorName = appData.activeUser ? `${appData.activeUser.name} (${appData.activeUser.role})` : 'Resident Doctor';
             p.endoLogs.unshift({
                 type, varices, forrest, notes,
-                author: `${appData.activeUser.name} (${appData.activeUser.role})`,
+                author: authorName,
                 date: new Date().toLocaleString('en-US')
             });
 
@@ -1351,17 +1457,17 @@
             const p = appData.patients.find(x => x.id === currentPatientId);
             const container = document.getElementById('endo-history-list');
             if (!p || !p.endoLogs || p.endoLogs.length === 0) {
-                container.innerHTML = `<p class="text-slate-400">No endoscopy reports logged.</p>`;
+                container.innerHTML = `<p class="text-slate-500">No endoscopy reports logged.</p>`;
                 return;
             }
             container.innerHTML = p.endoLogs.map(e => `
-                <div class="p-3 bg-amber-50 rounded-lg border border-amber-200 space-y-1">
-                    <div class="flex justify-between font-bold text-amber-950">
+                <div class="p-3 bg-amber-500/10 rounded-lg border border-amber-500/30 space-y-1">
+                    <div class="flex justify-between font-bold text-amber-300">
                         <span>${e.type} - Varices: ${e.varices}</span>
                         <span>${e.date}</span>
                     </div>
-                    <p class="text-slate-700"><strong>Forrest Class:</strong> ${e.forrest} | <strong>Findings:</strong> ${e.notes || 'None'}</p>
-                    <p class="text-[10px] text-slate-400">Operator: ${e.author}</p>
+                    <p class="text-slate-300"><strong>Forrest Class:</strong> ${e.forrest} | <strong>Findings:</strong> ${e.notes || 'None'}</p>
+                    <p class="text-[10px] text-slate-500">Operator: ${e.author}</p>
                 </div>
             `).join('');
         }
@@ -1372,10 +1478,10 @@
             if (vol >= 5.0) {
                 const dose = (vol * 8).toFixed(0);
                 recBox.innerText = `${dose} g IV Albumin 20% (${(vol*8/10).toFixed(0)} vials of 50ml)`;
-                recBox.className = "text-xs font-black text-rose-700";
+                recBox.className = "text-xs font-black text-rose-400";
             } else {
                 recBox.innerText = `0 g (No Albumin if volume < 5 L)`;
-                recBox.className = "text-xs font-black text-indigo-700";
+                recBox.className = "text-xs font-black text-indigo-400";
             }
         }
 
@@ -1388,9 +1494,10 @@
             const p = appData.patients.find(x => x.id === currentPatientId);
             if (!p.paraLogs) p.paraLogs = [];
 
+            const authorName = appData.activeUser ? `${appData.activeUser.name} (${appData.activeUser.role})` : 'Resident Doctor';
             p.paraLogs.unshift({
                 vol, pmn, alb, isSBP,
-                author: `${appData.activeUser.name} (${appData.activeUser.role})`,
+                author: authorName,
                 date: new Date().toLocaleString('en-US')
             });
 
@@ -1405,17 +1512,17 @@
             const p = appData.patients.find(x => x.id === currentPatientId);
             const container = document.getElementById('para-history-list');
             if (!p || !p.paraLogs || p.paraLogs.length === 0) {
-                container.innerHTML = `<p class="text-slate-400">No paracentesis records logged.</p>`;
+                container.innerHTML = `<p class="text-slate-500">No paracentesis records logged.</p>`;
                 return;
             }
             container.innerHTML = p.paraLogs.map(pr => `
-                <div class="p-3 ${pr.isSBP ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-200'} rounded-lg border space-y-1">
+                <div class="p-3 ${pr.isSBP ? 'bg-rose-500/10 border-rose-500/40' : 'bg-slate-950 border-slate-800'} rounded-lg border space-y-1">
                     <div class="flex justify-between font-bold">
-                        <span class="text-slate-900">Volume: ${pr.vol} L ${pr.vol >= 5 ? '(LVP)' : ''}</span>
+                        <span class="text-slate-200">Volume: ${pr.vol} L ${pr.vol >= 5 ? '(LVP)' : ''}</span>
                         ${pr.isSBP ? '<span class="bg-rose-600 text-white text-[10px] px-2 py-0.5 rounded font-black">CRITICAL: SBP Confirmed (PMN ≥ 250)</span>' : ''}
                         <span class="text-slate-400 font-normal">${pr.date}</span>
                     </div>
-                    <p class="text-slate-700"><strong>PMN:</strong> ${pr.pmn} /mm³ | <strong>Ascitic Albumin:</strong> ${pr.alb} g/dL</p>
+                    <p class="text-slate-300"><strong>PMN:</strong> ${pr.pmn} /mm³ | <strong>Ascitic Albumin:</strong> ${pr.alb} g/dL</p>
                 </div>
             `).join('');
         }
@@ -1529,7 +1636,7 @@
             
             let report = `=== GIT & HEPATOLOGY WARD SBAR HANDOVER REPORT ===\n`;
             report += `Date & Time: ${new Date().toLocaleString('en-US')}\n`;
-            report += `On-Call Clinician: ${appData.activeUser.name} (${appData.activeUser.role})\n`;
+            report += `On-Call Clinician: ${appData.activeUser ? appData.activeUser.name : 'Dr. Mostafa'} (${appData.activeUser ? appData.activeUser.role : 'Resident'})\n`;
             report += `Active Inpatients: ${activePts.length}\n\n`;
 
             activePts.forEach((p, idx) => {
@@ -1607,18 +1714,18 @@
                         date: '31/10/2026'
                     },
                     soaps: [
-                        { author: 'Dr. Mostafa (Resident)', date: '31/10/2026', text: 'Patient stabilized post emergency EGD EVL. Continue IV Terlipressin infusion.' }
+                        { author: 'Dr. Mostafa (Resident Physician)', date: '31/10/2026', text: 'Patient stabilized post emergency EGD EVL. Continue IV Terlipressin infusion.' }
                     ],
                     standardLabs: [
                         { date: '29 Oct', values: { bili: 2.8, alb: 2.6, inr: 1.8, cr: 1.1, alt: 54, ast: 68, hb: 9.2, plt: 85 } },
                         { date: '30 Oct', values: { bili: 3.1, alb: 2.5, inr: 1.9, cr: 1.2, alt: 50, ast: 64, hb: 7.8, plt: 80 } }
                     ],
                     customLabs: [
-                        { name: 'GGT', val: '145', unit: 'U/L', author: 'Dr. Mostafa (Resident)', date: '31/10/2026' },
-                        { name: 'HCV Ab', val: 'Positive', unit: '', author: 'Dr. Mostafa (Resident)', date: '31/10/2026' }
+                        { name: 'GGT', val: '145', unit: 'U/L', author: 'Dr. Mostafa (Resident Physician)', date: '31/10/2026' },
+                        { name: 'HCV Ab', val: 'Positive', unit: '', author: 'Dr. Mostafa (Resident Physician)', date: '31/10/2026' }
                     ],
                     endoLogs: [
-                        { type: 'Upper EGD', varices: 'Grade III (Large coil-like)', forrest: 'N/A', notes: 'Emergency EVL x4 bands applied successfully', author: 'Dr. Mostafa (Resident)', date: '31/10/2026' }
+                        { type: 'Upper EGD', varices: 'Grade III (Large coil-like)', forrest: 'N/A', notes: 'Emergency EVL x4 bands applied successfully', author: 'Dr. Mostafa (Resident Physician)', date: '31/10/2026' }
                     ],
                     paraLogs: []
                 }
